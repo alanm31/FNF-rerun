@@ -127,7 +127,7 @@ class TitleState extends MusicBeatState
 		swagShader = new ColorSwap();
 		super.create();
 
-		FlxG.save.bind('funkin', CoolUtil.getSavePath());
+		FlxG.save.bind('funkin' #if (flixel < "5.0.0"), 'ninjamuffin99' #end);
 
 		ClientPrefs.loadPrefs();
 
@@ -253,6 +253,8 @@ class TitleState extends MusicBeatState
 			if(FlxG.sound.music == null) {
 				FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 			}
+
+			FlxG.signals.preStateSwitch.add(Conductor.clearTmr);
 		}
 
 		Conductor.changeBPM(titleJSON.bpm);

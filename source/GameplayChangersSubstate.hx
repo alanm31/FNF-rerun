@@ -41,6 +41,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 	{
 		var goption:GameplayOption = new GameplayOption('Scroll Type', 'scrolltype', 'string', 'multiplicative', ["multiplicative", "constant"]);
 		optionsArray.push(goption);
+		
 
 		var option:GameplayOption = new GameplayOption('Scroll Speed', 'scrollspeed', 'float', 1);
 		option.scrollSpeed = 2.0;
@@ -114,6 +115,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		var bg:FlxSprite = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		bg.alpha = 0.6;
 		add(bg);
+		bg.scrollFactor.set();
 
 		// avoids lagspikes while scrolling through menus!
 		grpOptions = new FlxTypedGroup<Alphabet>();
@@ -134,6 +136,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 			optionText.scaleX = 0.8;
 			optionText.scaleY = 0.8;
 			optionText.targetY = i;
+			optionText.scrollFactor.set();
 			grpOptions.add(optionText);
 
 			if(optionsArray[i].type == 'bool') {
@@ -145,6 +148,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 				checkbox.offsetX -= 32;
 				checkbox.offsetY = -120;
 				checkbox.ID = i;
+				checkbox.scrollFactor.set();
 				checkboxGroup.add(checkbox);
 			} else {
 				optionText.snapToPosition();
@@ -152,6 +156,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 				valueText.sprTracker = optionText;
 				valueText.copyAlpha = true;
 				valueText.ID = i;
+				valueText.scrollFactor.set();
 				grpTexts.add(valueText);
 				optionsArray[i].setChild(valueText);
 			}

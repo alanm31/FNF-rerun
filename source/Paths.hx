@@ -109,7 +109,7 @@ class Paths
 		}
 		// flags everything to be cleared out next unused memory clear
 		localTrackedAssets = [];
-		#if !html5 openfl.Assets.cache.clear("songs"); #end
+		openfl.Assets.cache.clear("songs");
 	}
 
 	static public var currentModDirectory:String = '';
@@ -174,9 +174,14 @@ class Paths
 
 	inline static public function json(key:String, ?library:String)
 	{
-		return getPath('data/$key.json', TEXT, library);
+		return getPath('songs/$key.json', TEXT, library);
 	}
 
+	inline static public function hscript(key:String, ?library:String)
+	{
+		return getPath('songs/$key.hx', TEXT, library);
+	}
+	
 	inline static public function shaderFragment(key:String, ?library:String)
 	{
 		return getPath('shaders/$key.frag', TEXT, library);
@@ -188,6 +193,10 @@ class Paths
 	inline static public function lua(key:String, ?library:String)
 	{
 		return getPath('$key.lua', TEXT, library);
+	}
+
+	inline public static function hs(key:String,?library:String){
+		return getPath('$key.hx', TEXT, library);
 	}
 
 	static public function video(key:String)
@@ -220,24 +229,16 @@ class Paths
 
 	inline static public function voices(song:String):Any
 	{
-		#if html5
-		return 'songs:assets/songs/${formatToSongPath(song)}/Voices.$SOUND_EXT';
-		#else
 		var songKey:String = '${formatToSongPath(song)}/Voices';
 		var voices = returnSound('songs', songKey);
 		return voices;
-		#end
 	}
 
 	inline static public function inst(song:String):Any
 	{
-		#if html5
-		return 'songs:assets/songs/${formatToSongPath(song)}/Inst.$SOUND_EXT';
-		#else
 		var songKey:String = '${formatToSongPath(song)}/Inst';
 		var inst = returnSound('songs', songKey);
 		return inst;
-		#end
 	}
 
 	inline static public function image(key:String, ?library:String):FlxGraphic
@@ -367,7 +368,7 @@ class Paths
 			localTrackedAssets.push(path);
 			return currentTrackedAssets.get(path);
 		}
-		trace('oh no its returning null NOOOO');
+		trace('oh no $key its returning null NOOOO');
 		return null;
 	}
 

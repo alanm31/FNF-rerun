@@ -177,6 +177,17 @@ class Character extends FlxSprite
 				positionArray = json.position;
 				cameraPosition = json.camera_position;
 
+
+				
+				if(curCharacter=="sh bf dead"){
+					var avb = Paths.getPreloadPath('characters/sh bf.json');
+					var a = File.getContent(avb);
+					var b:CharacterFile = cast Json.parse(a);
+					positionArray=b.position;
+					cameraPosition=b.camera_position;
+				}
+
+
 				healthIcon = json.healthicon;
 				singDuration = json.sing_duration;
 				flipX = !!json.flip_x;

@@ -60,9 +60,9 @@ import Discord;
 using StringTools;
 
 class FunkinLua {
-	public static var Function_Stop:Dynamic = "##PSYCHLUA_FUNCTIONSTOP";
-	public static var Function_Continue:Dynamic = "##PSYCHLUA_FUNCTIONCONTINUE";
-	public static var Function_StopLua:Dynamic = "##PSYCHLUA_FUNCTIONSTOPLUA";
+	public static var Function_Stop:Dynamic = 1;
+	public static var Function_Continue:Dynamic = 0;
+	public static var Function_StopLua:Dynamic = 2;
 
 	//public var errorHandler:String->Void;
 	#if LUA_ALLOWED
@@ -76,6 +76,29 @@ class FunkinLua {
 	public static var hscript:HScript = null;
 	#end
 	
+	public static function runHaxeCode(codeToRun:String){
+		var retVal:Dynamic = null;
+
+		#if hscript
+		if(hscript == null)
+			{
+				trace('initializing haxe interp');
+				hscript = new HScript(); //TO DO: Fix issue with 2 scripts not being able to use the same variable names
+			}
+		try {
+			retVal = hscript.execute(codeToRun);
+		}
+		catch (e:Dynamic) {
+			trace(e);
+		}
+		#else
+		trace("runHaxeCode: HScript isn't supported on this platform!");
+		#end
+
+		if(retVal != null && !isOfTypes(retVal, [Bool, Int, Float, String, Array])) retVal = null;
+		return retVal;
+	}
+
 	public function new(script:String) {
 		#if LUA_ALLOWED
 		lua = LuaL.newstate();
@@ -309,11 +332,13 @@ class FunkinLua {
 			var shader:FlxRuntimeShader = getShader(obj);
 			if (shader == null)
 			{
+				Lua.pushnil(lua);
 				return null;
 			}
 			return shader.getBool(prop);
 			#else
 			luaTrace("getShaderBool: Platform unsupported for Runtime Shaders!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 			#end
 		});
@@ -322,11 +347,13 @@ class FunkinLua {
 			var shader:FlxRuntimeShader = getShader(obj);
 			if (shader == null)
 			{
+				Lua.pushnil(lua);
 				return null;
 			}
 			return shader.getBoolArray(prop);
 			#else
 			luaTrace("getShaderBoolArray: Platform unsupported for Runtime Shaders!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 			#end
 		});
@@ -335,11 +362,13 @@ class FunkinLua {
 			var shader:FlxRuntimeShader = getShader(obj);
 			if (shader == null)
 			{
+				Lua.pushnil(lua);
 				return null;
 			}
 			return shader.getInt(prop);
 			#else
 			luaTrace("getShaderInt: Platform unsupported for Runtime Shaders!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 			#end
 		});
@@ -348,11 +377,13 @@ class FunkinLua {
 			var shader:FlxRuntimeShader = getShader(obj);
 			if (shader == null)
 			{
+				Lua.pushnil(lua);
 				return null;
 			}
 			return shader.getIntArray(prop);
 			#else
 			luaTrace("getShaderIntArray: Platform unsupported for Runtime Shaders!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 			#end
 		});
@@ -361,11 +392,13 @@ class FunkinLua {
 			var shader:FlxRuntimeShader = getShader(obj);
 			if (shader == null)
 			{
+				Lua.pushnil(lua);
 				return null;
 			}
 			return shader.getFloat(prop);
 			#else
 			luaTrace("getShaderFloat: Platform unsupported for Runtime Shaders!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 			#end
 		});
@@ -374,11 +407,13 @@ class FunkinLua {
 			var shader:FlxRuntimeShader = getShader(obj);
 			if (shader == null)
 			{
+				Lua.pushnil(lua);
 				return null;
 			}
 			return shader.getFloatArray(prop);
 			#else
 			luaTrace("getShaderFloatArray: Platform unsupported for Runtime Shaders!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 			#end
 		});
@@ -545,6 +580,8 @@ class FunkinLua {
 
 				}
 			}
+			Lua.pushnil(lua);
+
 		});
 
 		Lua_helper.add_callback(lua, "getGlobalFromScript", function(?luaFile:String, ?global:String){ // returns the global from a script
@@ -610,6 +647,7 @@ class FunkinLua {
 
 				}
 			}
+			Lua.pushnil(lua);
 		});
 		Lua_helper.add_callback(lua, "setGlobalFromScript", function(luaFile:String, global:String, val:Dynamic){ // returns the global from a script
 			var cervix = luaFile + ".lua";
@@ -648,6 +686,7 @@ class FunkinLua {
 
 				}
 			}
+			Lua.pushnil(lua);
 		});
 		/*Lua_helper.add_callback(lua, "getGlobals", function(luaFile:String){ // returns a copy of the specified file's globals
 			var cervix = luaFile + ".lua";
@@ -685,6 +724,7 @@ class FunkinLua {
 						var tableIdx = Lua.gettop(lua);
 
 						Lua.pushvalue(luaInstance.lua, Lua.LUA_GLOBALSINDEX);
+						Lua.pushnil(luaInstance.lua);
 						while(Lua.next(luaInstance.lua, -2) != 0) {
 							// key = -2
 							// value = -1
@@ -730,6 +770,7 @@ class FunkinLua {
 
 				}
 			}
+			Lua.pushnil(lua);
 		});*/
 		Lua_helper.add_callback(lua, "isRunning", function(luaFile:String){
 			var cervix = luaFile + ".lua";
@@ -879,6 +920,7 @@ class FunkinLua {
 			#end
 
 			if(retVal != null && !isOfTypes(retVal, [Bool, Int, Float, String, Array])) retVal = null;
+			if(retVal == null) Lua.pushnil(lua);
 			return retVal;
 		});
 
@@ -953,6 +995,8 @@ class FunkinLua {
 				result = getVarInArray(getPropertyLoopThingWhatever(killMe), killMe[killMe.length-1]);
 			else
 				result = getVarInArray(getInstance(), variable);
+
+			if(result == null) Lua.pushnil(lua);
 			return result;
 		});
 		Lua_helper.add_callback(lua, "setProperty", function(variable:String, value:Dynamic) {
@@ -974,6 +1018,7 @@ class FunkinLua {
 			if(Std.isOfType(realObject, FlxTypedGroup))
 			{
 				var result:Dynamic = getGroupStuff(realObject.members[index], variable);
+				if(result == null) Lua.pushnil(lua);
 				return result;
 			}
 
@@ -985,9 +1030,12 @@ class FunkinLua {
 					result = leArray[variable];
 				else
 					result = getGroupStuff(leArray, variable);
+
+				if(result == null) Lua.pushnil(lua);
 				return result;
 			}
 			luaTrace("getPropertyFromGroup: Object #" + index + " from group: " + obj + " doesn't exist!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 		});
 		Lua_helper.add_callback(lua, "setPropertyFromGroup", function(obj:String, index:Int, variable:Dynamic, value:Dynamic) {
@@ -1509,10 +1557,12 @@ class FunkinLua {
 		Lua_helper.add_callback(lua, "precacheMusic", function(name:String) {
 			CoolUtil.precacheMusic(name);
 		});
-		Lua_helper.add_callback(lua, "triggerEvent", function(name:String, arg1:Dynamic, arg2:Dynamic) {
+		Lua_helper.add_callback(lua, "triggerEvent", function(name:String, arg1:Dynamic, arg2:Dynamic, time:Dynamic) {
 			var value1:String = arg1;
 			var value2:String = arg2;
-			PlayState.instance.triggerEventNote(name, value1, value2);
+			var ti:Float = time;
+			if(Math.isNaN(ti) || time == null)ti = Conductor.songPosition;
+			PlayState.instance.triggerEventNote(name, value1, value2, ti);
 			//trace('Triggered event: ' + name + ', ' + value1 + ', ' + value2);
 			return true;
 		});
@@ -1538,7 +1588,7 @@ class FunkinLua {
 				FlxTransitionableState.skipNextTransOut = true;
 			}
 
-			PlayState.cancelMusicFadeTween();
+			PlayState.instance.cancelMusicFadeTween();
 			CustomFadeTransition.nextCamera = PlayState.instance.camOther;
 			if(FlxTransitionableState.skipNextTransIn)
 				CustomFadeTransition.nextCamera = null;
@@ -1600,9 +1650,9 @@ class FunkinLua {
 			}
 		});
 		Lua_helper.add_callback(lua, "cameraSetTarget", function(target:String) {
-			var isDad:Bool = false;
+			var isDad:String = 'false';
 			if(target == 'dad') {
-				isDad = true;
+				isDad = 'true';
 			}
 			PlayState.instance.moveCamera(isDad);
 			return isDad;
@@ -2413,6 +2463,7 @@ class FunkinLua {
 				return obj.text;
 			}
 			luaTrace("getTextString: Object " + tag + " doesn't exist!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 		});
 		Lua_helper.add_callback(lua, "getTextSize", function(tag:String) {
@@ -2431,6 +2482,7 @@ class FunkinLua {
 				return obj.font;
 			}
 			luaTrace("getTextFont: Object " + tag + " doesn't exist!", false, false, FlxColor.RED);
+			Lua.pushnil(lua);
 			return null;
 		});
 		Lua_helper.add_callback(lua, "getTextWidth", function(tag:String) {
@@ -2479,7 +2531,7 @@ class FunkinLua {
 			{
 				var save:FlxSave = new FlxSave();
 				// folder goes unused for flixel 5 users. @BeastlyGhost
-				save.bind(name, CoolUtil.getSavePath(folder));
+				save.bind(name #if (flixel < "5.0.0"), folder #end);
 				PlayState.instance.modchartSaves.set(name, save);
 				return;
 			}

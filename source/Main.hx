@@ -1,5 +1,7 @@
 package;
 
+import openfl.text.TextFormat;
+import openfl.text.TextField;
 import flixel.graphics.FlxGraphic;
 import flixel.FlxG;
 import flixel.FlxGame;
@@ -73,6 +75,8 @@ class Main extends Sprite
 		setupGame();
 	}
 
+	var buildDate:TextField;
+
 	private function setupGame():Void
 	{
 		var stageWidth:Int = Lib.current.stage.stageWidth;
@@ -98,6 +102,19 @@ class Main extends Sprite
 		if(fpsVar != null) {
 			fpsVar.visible = ClientPrefs.showFPS;
 		}
+
+		buildDate = new TextField();
+		buildDate.x = 10;
+		buildDate.y = 650;
+
+		var date = Macro.getBuildDate();
+		buildDate.selectable = false;
+		buildDate.mouseEnabled = false;
+		buildDate.defaultTextFormat = new TextFormat("_sans", 24, 0x9E9191);
+		buildDate.autoSize = LEFT;
+		buildDate.multiline = false;
+		buildDate.text = "Built: " + Macro.getBuildDate();
+		addChild(buildDate);
 		#end
 
 		#if html5
@@ -117,6 +134,12 @@ class Main extends Sprite
 			});
 		}
 		#end
+	}
+
+	@:noCompletion private override function __update(transformOnly:Bool, updateChildren:Bool):Void
+	{
+		super.__update(transformOnly, updateChildren);
+		buildDate.y = lime.app.Application.current.window.height - 70;
 	}
 
 	// Code was entirely made by sqirra-rng for their fnf engine named "Izzy Engine", big props to them!!!

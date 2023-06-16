@@ -1,6 +1,8 @@
 package;
 
+import flixel.util.FlxArrayUtil;
 import Song.SwagSong;
+import flixel.tweens.FlxTween;
 
 /**
  * ...
@@ -15,8 +17,121 @@ typedef BPMChangeEvent =
 	@:optional var stepCrochet:Float;
 }
 
+/*
+* A timer class similar to FlxTimer, but timed to the Conductor time instead of an internal timer like FlxTimer is.
+*/
+class SongTimer
+{
+	public var executeTime:Float = 0;
+	public var onComplete:SongTimer->Void;
+	public var finished:Bool = true;
+	public var active:Bool = false;
+
+	public function new(){} // doesnt really do much lol
+
+	/*
+	* Starts the timer
+	* Recommended to use startAbs with a direct song position instead of this.
+	* 
+	* @param	time		How many seconds it takes for the timer to go off
+	* 						If 0 then timer will fire callback only once at the first call of update method
+	* 
+	* @param	callback	Triggered when the timer runs out.
+	* 
+	* @return	A reference to itself 
+	*/
+	public function start(time:Float, ?callback:SongTimer->Void)return startAbs((Conductor.songPosition/1000)+time, callback);
+	
+	/*
+	 * Starts the timer with a fixed song position
+	 * 
+	 * @param	time		The song time at which the timer will go off.
+	 * 
+	 * @param	callback	Triggered when the timer runs out.
+	 * 
+	 * @return	A reference to itself 
+	 */
+	public function startAbs(time:Float, ?callback:SongTimer->Void)
+	{
+		active = true;
+		finished=false;
+		if(callback!=null)onComplete = callback;
+		executeTime = time;
+		if(!Conductor.hasTimer(this))Conductor.addTimer(this);
+
+		return this;
+	}
+
+	/*
+	 * Cancels the timer
+	 * @return	A reference to itself 
+	 */
+	public function cancel()
+	{
+		finished = true;
+		active = false;
+		if(Conductor.hasTimer(this))Conductor.delTimer(this);
+		return this;
+	}
+
+	public function update(elapsed:Float)
+	{
+		if(executeTime*1000 <= Conductor.songPosition){
+			if (onComplete!=null)
+				onComplete(this);
+			cancel();
+		}
+	}
+}
+
+/*
+* [WIP]
+* A tween class similar to FlxTween, but timed to the Conductor time instead of an internal timer like FlxTween is.
+*/
+class SongTween
+{
+
+}
 class Conductor
 {
+	// timers
+	public static var timers:Array<SongTimer> = [];
+	public static inline function hasTimer(tmr:SongTimer)return timers.contains(tmr);
+	public static inline function addTimer(tmr:SongTimer)return timers.push(tmr);
+	public static inline function delTimer(tmr:SongTimer)return timers.remove(tmr);
+	public static inline function clearTmr()
+		FlxArrayUtil.clearArray(timers);
+
+	// tweens
+	public static var tweens:Array<SongTween> = [];
+	public static inline function hasTween(twn:SongTween)
+		return tweens.contains(twn);
+
+	public static inline function addTween(twn:SongTween)
+		return tweens.push(twn);
+
+	public static inline function delTween(twn:SongTween)
+		return tweens.remove(twn);
+
+	public static inline function clearTwn()
+		FlxArrayUtil.clearArray(tweens);
+
+	// da rest
+	public static inline function clearAll(){
+		clearTmr();
+		clearTwn();
+	}
+	
+	public static function update(elapsed:Float){
+		for(tmr in timers){
+			if(!tmr.active || tmr.finished)continue;
+
+			tmr.update(elapsed);
+		}
+	}
+	
+	//public static var timedEvents:Array<Void->Void> = [];
+
 	public static var bpm:Float = 100;
 	public static var crochet:Float = ((60 / bpm) * 1000); // beats in milliseconds
 	public static var stepCrochet:Float = crochet / 4; // steps in milliseconds

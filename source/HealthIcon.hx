@@ -7,6 +7,7 @@ using StringTools;
 
 class HealthIcon extends FlxSprite
 {
+	public var beatScale:Float = 1;
 	public var sprTracker:FlxSprite;
 	private var isOldIcon:Bool = false;
 	private var isPlayer:Bool = false;
